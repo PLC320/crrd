@@ -51,20 +51,20 @@ const News = () => {
   };
 
   const categories = [
-    { id: 'all', name: 'Tất cả', count: articles.length },
-    { id: 'news', name: 'Tin tức', count: articles.filter(n => n.category === 'news').length },
-    { id: 'events', name: 'Sự kiện', count: articles.filter(n => n.category === 'events').length },
-    { id: 'projects', name: 'Dự án', count: articles.filter(n => n.category === 'projects').length },
-    { id: 'training', name: 'Đào tạo', count: articles.filter(n => n.category === 'training').length },
-    { id: 'cooperation', name: 'Hợp tác', count: articles.filter(n => n.category === 'cooperation').length }
+    { id: 'all', name: 'Tất cả', count: articles?.length || 0 },
+    { id: 'news', name: 'Tin tức', count: articles?.filter(n => n.category === 'news')?.length || 0 },
+    { id: 'events', name: 'Sự kiện', count: articles?.filter(n => n.category === 'events')?.length || 0 },
+    { id: 'projects', name: 'Dự án', count: articles?.filter(n => n.category === 'projects')?.length || 0 },
+    { id: 'training', name: 'Đào tạo', count: articles?.filter(n => n.category === 'training')?.length || 0 },
+    { id: 'cooperation', name: 'Hợp tác', count: articles?.filter(n => n.category === 'cooperation')?.length || 0 }
   ];
 
-  const filteredArticles = articles.filter(article => {
+  const filteredArticles = (articles || []).filter(article => {
     const title = language === 'vi' ? article.title : (article.title_en || article.title);
-    const excerpt = language === 'vi' ? article.excerpt : (article.excerpt_en || article.excerpt);
+    const excerpt = language === 'vi' ? (article.excerpt || '') : (article.excerpt_en || article.excerpt || '');
     
-    const matchesSearch = title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (excerpt && excerpt.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = (title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -72,6 +72,17 @@ const News = () => {
   // For now, treat first 2 articles as featured
   const featuredArticles = filteredArticles.slice(0, 2);
   const regularArticles = filteredArticles.slice(2);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Đang tải tin tức...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
