@@ -9,6 +9,7 @@ import Footer from "@/components/common/Footer";
 import Home from "./pages/Home";
 import AboutUs from "./pages/AboutUs";
 import News from "./pages/News";
+import ArticleDetail from "./pages/ArticleDetail";
 import Projects from "./pages/Projects";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/" element={<Home />} />
                 <Route path="/about-us" element={<AboutUs />} />
                 <Route path="/news" element={<News />} />
+                <Route path="/news/:id" element={<ArticleDetail />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/contact" element={<Contact />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

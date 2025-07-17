@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface Article {
 
 const News = () => {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [articles, setArticles] = useState<Article[]>([]);
@@ -172,7 +174,12 @@ const News = () => {
                          article.category === 'projects' ? 'Dự án' : article.category}
                       </span>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-primary hover:text-primary/80 p-0"
+                      onClick={() => navigate(`/news/${article.id}`)}
+                    >
                       {t('common.readMore')} <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                   </CardContent>
@@ -230,7 +237,12 @@ const News = () => {
                          article.category === 'projects' ? 'Dự án' : article.category}
                       </span>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-primary hover:text-primary/80 p-0"
+                      onClick={() => navigate(`/news/${article.id}`)}
+                    >
                       {t('common.readMore')} <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                   </CardContent>
