@@ -1,108 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar, Search, ArrowRight, Tag } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Article {
+  id: string;
+  title: string;
+  title_en: string | null;
+  excerpt: string | null;
+  excerpt_en: string | null;
+  content: string;
+  content_en: string | null;
+  published_at: string;
+  category: string;
+  featured_image: string | null;
+}
 
 const News = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const newsArticles = [
-    {
-      id: 1,
-      title: 'Khởi động dự án phát triển nông nghiệp bền vững tại Quảng Bình',
-      excerpt: 'CRRD chính thức khởi động dự án nghiên cứu và ứng dụng công nghệ IoT trong sản xuất nông nghiệp, hứa hẹn mang lại hiệu quả kinh tế cao cho nông dân địa phương...',
-      content: 'Nội dung chi tiết về dự án phát triển nông nghiệp bền vững...',
-      date: '2024-01-15',
-      category: 'projects',
-      author: 'CRRD',
-      tags: ['Nông nghiệp thông minh', 'IoT', 'Bền vững'],
-      image: '/placeholder-news-1.jpg',
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Hội thảo quốc tế "Nông thôn số trong thời đại 4.0"',
-      excerpt: 'Sự kiện quy tụ hơn 200 chuyên gia hàng đầu về phát triển nông thôn từ 15 quốc gia, chia sẻ kinh nghiệm và xu hướng mới nhất trong lĩnh vực nông nghiệp số...',
-      content: 'Nội dung chi tiết về hội thảo quốc tế...',
-      date: '2024-01-10',
-      category: 'events',
-      author: 'CRRD',
-      tags: ['Hội thảo', 'Quốc tế', 'Nông thôn số'],
-      image: '/placeholder-news-2.jpg',
-      featured: true
-    },
-    {
-      id: 3,
-      title: 'CRRD chính thức thành lập với tầm nhìn đột phá',
-      excerpt: 'Với sự ủng hộ của Hội Làm vườn tỉnh Quảng Bình, CRRD ra đời với sứ mệnh tiên phong trong nghiên cứu và phát triển các giải pháp bền vững cho khu vực nông thôn...',
-      content: 'Nội dung chi tiết về việc thành lập CRRD...',
-      date: '2024-01-05',
-      category: 'news',
-      author: 'CRRD',
-      tags: ['Thành lập', 'CRRD', 'Nông thôn'],
-      image: '/placeholder-news-3.jpg',
-      featured: false
-    },
-    {
-      id: 4,
-      title: 'Chương trình đào tạo nông dân về công nghệ sinh học',
-      excerpt: 'CRRD tổ chức khóa đào tạo chuyên sâu về ứng dụng công nghệ sinh học trong chăn nuôi và trồng trọt, thu hút sự tham gia của hơn 150 nông dân từ 20 xã...',
-      content: 'Nội dung chi tiết về chương trình đào tạo...',
-      date: '2024-01-01',
-      category: 'training',
-      author: 'Ban Đào tạo',
-      tags: ['Đào tạo', 'Công nghệ sinh học', 'Nông dân'],
-      image: '/placeholder-news-4.jpg',
-      featured: false
-    },
-    {
-      id: 5,
-      title: 'Ký kết hợp tác với Đại học Nông nghiệp Hà Nội',
-      excerpt: 'Thỏa thuận hợp tác chiến lược trong nghiên cứu và phát triển công nghệ nông nghiệp tiên tiến, mở ra cơ hội trao đổi chuyên gia và sinh viên thực tập...',
-      content: 'Nội dung chi tiết về hợp tác...',
-      date: '2023-12-28',
-      category: 'cooperation',
-      author: 'Ban Hợp tác',
-      tags: ['Hợp tác', 'Đại học', 'Nghiên cứu'],
-      image: '/placeholder-news-5.jpg',
-      featured: false
-    },
-    {
-      id: 6,
-      title: 'Triển khai dự án "Nông trại thông minh" tại huyện Bố Trạch',
-      excerpt: 'Dự án pilot áp dụng hệ thống giám sát tự động, tưới tiêu thông minh và quản lý dinh dưỡng cây trồng bằng AI tại 5 hợp tác xã nông nghiệp...',
-      content: 'Nội dung chi tiết về dự án nông trại thông minh...',
-      date: '2023-12-25',
-      category: 'projects',
-      author: 'Ban Nghiên cứu',
-      tags: ['Nông trại thông minh', 'AI', 'Pilot'],
-      image: '/placeholder-news-6.jpg',
-      featured: false
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  const fetchArticles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching articles:', error);
+      } else {
+        setArticles(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const categories = [
-    { id: 'all', name: 'Tất cả', count: newsArticles.length },
-    { id: 'news', name: 'Tin tức', count: newsArticles.filter(n => n.category === 'news').length },
-    { id: 'events', name: 'Sự kiện', count: newsArticles.filter(n => n.category === 'events').length },
-    { id: 'projects', name: 'Dự án', count: newsArticles.filter(n => n.category === 'projects').length },
-    { id: 'training', name: 'Đào tạo', count: newsArticles.filter(n => n.category === 'training').length },
-    { id: 'cooperation', name: 'Hợp tác', count: newsArticles.filter(n => n.category === 'cooperation').length }
+    { id: 'all', name: 'Tất cả', count: articles.length },
+    { id: 'news', name: 'Tin tức', count: articles.filter(n => n.category === 'news').length },
+    { id: 'events', name: 'Sự kiện', count: articles.filter(n => n.category === 'events').length },
+    { id: 'projects', name: 'Dự án', count: articles.filter(n => n.category === 'projects').length },
+    { id: 'training', name: 'Đào tạo', count: articles.filter(n => n.category === 'training').length },
+    { id: 'cooperation', name: 'Hợp tác', count: articles.filter(n => n.category === 'cooperation').length }
   ];
 
-  const filteredArticles = newsArticles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredArticles = articles.filter(article => {
+    const title = language === 'vi' ? article.title : (article.title_en || article.title);
+    const excerpt = language === 'vi' ? article.excerpt : (article.excerpt_en || article.excerpt);
+    
+    const matchesSearch = title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (excerpt && excerpt.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const featuredArticles = filteredArticles.filter(article => article.featured);
-  const regularArticles = filteredArticles.filter(article => !article.featured);
+  // For now, treat first 2 articles as featured
+  const featuredArticles = filteredArticles.slice(0, 2);
+  const regularArticles = filteredArticles.slice(2);
 
   return (
     <div className="min-h-screen">
@@ -170,27 +139,27 @@ const News = () => {
                     <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
-                        <span>{article.date}</span>
+                        <span>{new Date(article.published_at).toLocaleDateString('vi-VN')}</span>
                       </div>
                       <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
                         Nổi bật
                       </span>
                     </div>
                     <CardTitle className="font-roboto-slab group-hover:text-primary transition-colors">
-                      {article.title}
+                      {language === 'vi' ? article.title : (article.title_en || article.title)}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="mb-4 line-clamp-3">
-                      {article.excerpt}
+                      {language === 'vi' ? article.excerpt : (article.excerpt_en || article.excerpt)}
                     </CardDescription>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {article.tags.slice(0, 2).map((tag, index) => (
-                        <span key={index} className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                          <Tag className="w-3 h-3 mr-1" />
-                          {tag}
-                        </span>
-                      ))}
+                      <span className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {article.category === 'news' ? 'Tin tức' : 
+                         article.category === 'events' ? 'Sự kiện' : 
+                         article.category === 'projects' ? 'Dự án' : article.category}
+                      </span>
                     </div>
                     <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0">
                       {t('common.readMore')} <ArrowRight className="w-4 h-4 ml-1" />
@@ -230,25 +199,25 @@ const News = () => {
                   <CardHeader>
                     <div className="flex items-center text-sm text-muted-foreground mb-2">
                       <Calendar className="w-4 h-4 mr-2" />
-                      <span>{article.date}</span>
+                      <span>{new Date(article.published_at).toLocaleDateString('vi-VN')}</span>
                       <span className="mx-2">•</span>
-                      <span>{article.author}</span>
+                      <span>CRRD</span>
                     </div>
                     <CardTitle className="font-roboto-slab group-hover:text-primary transition-colors text-lg">
-                      {article.title}
+                      {language === 'vi' ? article.title : (article.title_en || article.title)}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="mb-4 line-clamp-2">
-                      {article.excerpt}
+                      {language === 'vi' ? article.excerpt : (article.excerpt_en || article.excerpt)}
                     </CardDescription>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {article.tags.slice(0, 2).map((tag, index) => (
-                        <span key={index} className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                          <Tag className="w-3 h-3 mr-1" />
-                          {tag}
-                        </span>
-                      ))}
+                      <span className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {article.category === 'news' ? 'Tin tức' : 
+                         article.category === 'events' ? 'Sự kiện' : 
+                         article.category === 'projects' ? 'Dự án' : article.category}
+                      </span>
                     </div>
                     <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0">
                       {t('common.readMore')} <ArrowRight className="w-4 h-4 ml-1" />

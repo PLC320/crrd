@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      articles: {
+        Row: {
+          category: string | null
+          content: string
+          content_en: string | null
+          created_at: string
+          excerpt: string | null
+          excerpt_en: string | null
+          featured_image: string | null
+          id: string
+          published_at: string | null
+          status: string | null
+          title: string
+          title_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          content_en?: string | null
+          created_at?: string
+          excerpt?: string | null
+          excerpt_en?: string | null
+          featured_image?: string | null
+          id?: string
+          published_at?: string | null
+          status?: string | null
+          title: string
+          title_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          content_en?: string | null
+          created_at?: string
+          excerpt?: string | null
+          excerpt_en?: string | null
+          featured_image?: string | null
+          id?: string
+          published_at?: string | null
+          status?: string | null
+          title?: string
+          title_en?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      "Tin tức": {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
